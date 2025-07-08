@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "491617653071",
+    "project_id": "telegram-clone-dd51d",
+    "storage_bucket": "telegram-clone-dd51d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491617653071:android:9811d039740cd98b99b53a",
+        "android_client_info": {
+          "package_name": "com.softsolutions.telegram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOK8kt-K615a7euStIvef6o9_tOrV8c-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
