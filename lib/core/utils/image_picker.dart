@@ -9,6 +9,5 @@ Future<File?> pickImage() async {
   if (pickedImage != null) {
     image = File(pickedImage.path);
   }
-  // log(image != null ? image.path : "");
   return image;
 }

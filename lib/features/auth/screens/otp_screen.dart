@@ -28,7 +28,6 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.verificationId);
     return SafeArea(
       child: Scaffold(
         body: Center(

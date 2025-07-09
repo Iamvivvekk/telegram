@@ -1,23 +1,27 @@
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telegram/core/configurations/routes/route_names.dart';
-import 'package:telegram/core/constants/shared_preferences_keys.dart';
 import 'package:telegram/core/utils/show_snackbar.dart';
 import 'package:telegram/features/auth/repository/auth_repository.dart';
+import 'package:telegram/providers/user_data_provider.dart';
 
 final authControllerProvider = StateNotifierProvider<AuthController, bool>((
   ref,
 ) {
-  return AuthController(ref.read(authRepositoryProvider));
+  return AuthController(ref.read(authRepositoryProvider), ref);
 });
 
 class AuthController extends StateNotifier<bool> {
-  AuthRepository authRepository;
-  AuthController(this.authRepository) : super(false);
+  final AuthRepository _authRepository;
+  final Ref _ref;
+  AuthController(AuthRepository authRepository, Ref ref)
+    : _authRepository = authRepository,
+      _ref = ref,
+      super(false);
 
   void setFalse() {
     state = false;
@@ -25,7 +29,7 @@ class AuthController extends StateNotifier<bool> {
 
   Future<void> signInWithPhone(BuildContext context, String phoneNumber) async {
     state = true;
-    final result = await authRepository.sendOtp(phoneNumber);
+    final result = await _authRepository.sendOtp(phoneNumber);
 
     result.fold(
       (l) {
@@ -47,37 +51,32 @@ class AuthController extends StateNotifier<bool> {
     String verificationId,
     String smsCode,
   ) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
     state = true;
-    final result = await authRepository.verifyOtp(verificationId, smsCode);
-    state = false;
+    final result = await _authRepository.verifyOtp(verificationId, smsCode);
 
     result.fold(
       (error) {
+        state = false;
         showSnackbar(context, error.message);
         log(error.message);
       },
-      (userCredential) {
+      (user) {
+        state = false;
+        _ref.read(userDataProvider.notifier).update((oldUser) => user);
         showSnackbar(context, "OTP verified");
-        if (userCredential.additionalUserInfo != null) {
-          preferences.setBool(
-            SharedPreferencesKeys.isNewUser,
-            userCredential.additionalUserInfo!.isNewUser,
-          );
-          preferences.setString(
-            SharedPreferencesKeys.uid,
-            userCredential.user?.uid ?? "",
-          );
+        print(user.name);
+        if (user.name == null || user.name!.isEmpty) {
+          context.pushNamed(RouteNames.userInfo);
+        } else {
+          context.pushNamed(RouteNames.home);
         }
-        userCredential.additionalUserInfo!.isNewUser
-            ? context.goNamed(RouteNames.userInfo)
-            : context.goNamed(RouteNames.home);
       },
     );
   }
 
-  // bool isUserLoggedIn() {
-  //   return true;
-  //   return false;
-  // }
+  Stream<User?> get user => _authRepository.user;
+
+  Future<void> createOrGetUser() async {
+    // final result = await _authRepository.verifyOtp();
+  }
 }

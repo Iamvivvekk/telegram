@@ -27,6 +27,7 @@ class Routes {
     //     return "/";
     //   }
     // },
+    // initialLocation: "/auth/user-info",
     onException: (context, state, router) {
       const MaterialPage(
         child: Scaffold(body: Center(child: Text("Page not found"))),

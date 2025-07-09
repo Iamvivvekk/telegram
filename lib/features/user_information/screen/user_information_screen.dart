@@ -1,11 +1,14 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telegram/core/common/widgets/custom_button.dart';
 import 'package:telegram/core/common/widgets/height.dart';
 import 'package:telegram/core/configurations/colors.dart';
 import 'package:telegram/core/utils/image_picker.dart';
+import 'package:telegram/core/utils/loader.dart';
 import 'package:telegram/features/user_information/controller/user_info_controller.dart';
+import 'package:telegram/providers/user_data_provider.dart';
 
 class UserInfoScreen extends ConsumerStatefulWidget {
   const UserInfoScreen({super.key});
@@ -25,17 +28,10 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
     super.dispose();
   }
 
-  void pickProfileImage() async {
-    file = await pickImage();
-    if (file != null) {
-      ref.read(userInfoProvider.notifier).updateImage(file!);
-    }
-  }
-
-  void saveUserInfo() {
-    if (_formKey.currentState!.validate()) {
-      ref.watch(userInfoProvider);
-    }
+  void submitAdditionalInfo() {
+    ref
+        .read(userInfoControllerProvider.notifier)
+        .addAdditionalInfo(_nameController.text.trim(), file, context);
   }
 
   @override
@@ -52,7 +48,10 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                 children: [
                   const HeightSpacer(height: 40),
                   GestureDetector(
-                    onTap: pickProfileImage,
+                    onTap: () async {
+                      file = await pickImage();
+                      setState(() {});
+                    },
                     child: Stack(
                       children: [
                         Consumer(
@@ -60,11 +59,18 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                             return CircleAvatar(
                               radius: 50,
                               backgroundColor: AppColor.darkGrey,
-                              backgroundImage:
-                                  ref.watch(userInfoProvider) != null
-                                      ? FileImage(ref.read(userInfoProvider)!)
-                                      : const AssetImage(
-                                          "assets/images/profile_default.png"),
+                              backgroundImage: file == null
+                                  ? ref.watch(userDataProvider)?.profilePic ==
+                                            null
+                                        ? AssetImage(
+                                            "assets/images/profile_default.png",
+                                          )
+                                        : NetworkImage(
+                                            ref
+                                                .watch(userDataProvider)!
+                                                .profilePic!,
+                                          )
+                                  : FileImage(file!),
                             );
                           },
                         ),
@@ -72,7 +78,7 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                           bottom: 10,
                           right: 5,
                           child: Icon(Icons.edit),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -93,9 +99,15 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                     },
                   ),
                   const Spacer(flex: 20),
-                  CustomButton(
-                    onTap: saveUserInfo,
-                    text: "Save",
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final isLoading = ref.watch(userInfoControllerProvider);
+                      return CustomButton(
+                        onTap: isLoading ? null : submitAdditionalInfo,
+                        text: "Save",
+                        child: isLoading ? Loader() : null,
+                      );
+                    },
                   ),
                   const Spacer(flex: 1),
                 ],

@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:telegram/core/common/providers/firebase_providers.dart';
+import 'package:telegram/core/constants/api_constants.dart';
 import 'package:telegram/core/services/dio_services.dart';
 import 'package:telegram/core/typedef.dart';
 import 'package:telegram/core/utils/failure.dart';
+import 'package:telegram/model/user_model.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final firebasAuth = ref.read(firebaseAuthProvider);
@@ -24,7 +27,7 @@ class AuthRepository {
     : _dio = dio,
       _auth = auth;
 
-  bool get user => _auth.currentUser!.uid.isEmpty;
+  Stream<User?> get user => _auth.authStateChanges();
 
   FutureEither<String> sendOtp(String phoneNumber) async {
     final completer = Completer<Either<Failure, String>>();
@@ -54,7 +57,7 @@ class AuthRepository {
     }
   }
 
-  FutureEither<UserCredential> verifyOtp(
+  FutureEither<UserModel> verifyOtp(
     String verificationId,
     String smsCode,
   ) async {
@@ -65,11 +68,23 @@ class AuthRepository {
       );
       final userCredential = await _auth.signInWithCredential(credential);
 
-      if (userCredential.user != null) {
-        return right(userCredential);
-      } else {
-        throw "OTP verification failed";
+      final response = await _dio.post(
+        ApiConstants.signin,
+        data: jsonEncode({
+          "uid": userCredential.user!.uid,
+          "mobile": userCredential.user!.phoneNumber,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final user = UserModel.fromJson(response.data['user']);
+        return right(user);
       }
+      if (response.statusCode == 201) {
+        final user = UserModel.fromJson(response.data['user']);
+        return right(user);
+      }
+      throw response.data['message'];
     } on FirebaseAuthException catch (e) {
       return left(Failure(e.message!));
     } catch (e) {
@@ -77,7 +92,9 @@ class AuthRepository {
     }
   }
 
-  // FutureEither<UserModel> getUser() {
-  //   _dio.get("");
-  // }
+  Future createUser() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    final response = await _dio.get(ApiConstants.signin);
+  }
 }
