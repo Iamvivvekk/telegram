@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telegram/core/common/widgets/height.dart';
 import 'package:telegram/core/configurations/colors.dart';
 import 'package:telegram/core/utils/loader.dart';
+import 'package:telegram/core/utils/reusable_text.dart';
 import 'package:telegram/core/utils/text_styles.dart';
 import 'package:telegram/features/auth/controller/auth_controller.dart';
 import 'package:telegram/features/auth/controller/country_picker_provider.dart';
@@ -60,18 +61,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const ReusableText(
                   "Your phone number",
-                  style: normalText(fontsize: 22, fontWeight: FontWeight.bold),
+                  fontsize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
                 const HeightSpacer(),
-                Text(
+                const ReusableText(
                   "Please confirm your country code and enter your phone number",
                   textAlign: TextAlign.center,
-                  style: normalText(
-                    fontWeight: FontWeight.w500,
-                    color: const Color.fromARGB(255, 122, 119, 119),
-                  ),
+
+                  fontWeight: FontWeight.w500,
+                  color: Color.fromARGB(255, 122, 119, 119),
                 ),
                 const HeightSpacer(),
                 Consumer(
@@ -114,13 +115,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(left: 4.0),
-                              child: Text(
-                                "+ ${country.phoneCode}",
-
-                                style: normalText(),
-                              ),
+                              child: Text("+ ${country.phoneCode}"),
                             ),
-                            Text("|", style: normalText(fontsize: 18)),
+                            const ReusableText("|", fontsize: 18),
                           ],
                         ),
                       ),

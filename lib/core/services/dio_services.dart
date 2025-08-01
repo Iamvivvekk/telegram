@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:telegram/core/constants/shared_preferences_keys.dart';
 
 import '../constants/api_constants.dart';
 
@@ -32,14 +35,15 @@ class DioServices {
         onRequest:
             (RequestOptions options, RequestInterceptorHandler handler) async {
               final prefs = await SharedPreferences.getInstance();
-              final token = prefs.getString('authToken');
+              final authorization = prefs.getString(SharedPreferencesKeys.uid);
+              log(authorization ?? "Noo token");
 
               options.headers['Content-Type'] =
                   'application/json; charset=UTF-8';
               options.headers['Accept'] = 'application/json';
 
-              if (token != null && token.isNotEmpty) {
-                options.headers['Authorization'] = 'Bearer $token';
+              if (authorization != null && authorization.isNotEmpty) {
+                options.headers['authorization'] = authorization;
               }
               return handler.next(options);
             },

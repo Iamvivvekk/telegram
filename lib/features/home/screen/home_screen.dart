@@ -1,101 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:telegram/core/common/widgets/custom_drawer.dart';
-import 'package:telegram/core/common/widgets/height.dart';
-import 'package:telegram/core/common/widgets/width_spcer.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:telegram/core/Errors/error_screen.dart';
 import 'package:telegram/core/configurations/colors.dart';
-import 'package:telegram/core/utils/custom_search_delegate.dart';
-import 'package:telegram/core/utils/text_styles.dart';
+import 'package:telegram/core/configurations/routes/route_names.dart';
+import 'package:telegram/core/utils/loader.dart';
+import 'package:telegram/core/utils/reusable_text.dart';
+import 'package:telegram/features/drawer/screen/custom_drawer.dart';
+import 'package:telegram/features/home/controller/home_controller.dart';
+import 'package:telegram/features/home/widget/conversation_tile.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     getUser();
     super.initState();
   }
 
-  void getUser(){}
+  void getUser() {}
 
   @override
   Widget build(BuildContext context) {
+    // final s = HomeSocketRepository(ref.watch(socketProvider).value!);
+    // s.getOnlineStatus();
     return Scaffold(
       drawer: const CustomDrawer(),
       appBar: AppBar(
-        title: Text("Telegram", style: normalText(fontsize: 18)),
+        title: const ReusableText("Telegram", fontsize: 18),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () =>
-                showSearch(context: context, delegate: CustomSearchDelegate()),
+            onPressed: () => context.pushNamed(RouteNames.search),
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(0),
-        itemCount: 18,
-        itemBuilder: (context, index) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const CircleAvatar(
-                          radius: 22,
-                          backgroundColor: AppColor.blueText,
-                        ),
-                        const WidthSpacer(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Name", style: normalText()),
-                            Text("Last Message", style: greyText(fontsize: 12)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text("11:00 AM", style: greyText(fontsize: 12)),
-                        const HeightSpacer(height: 6),
-                        Container(
-                          height: 18,
-                          width: 18,
-                          decoration: const BoxDecoration(
-                            color: AppColor.blueSecondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text("1", style: normalText(fontsize: 8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const HeightSpacer(),
-                const Divider(
-                  indent: 52,
-                  color: AppColor.black,
-                  thickness: 0.0,
-                  height: 2,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+      body: ref
+          .watch(homeControllerProvider)
+          .when(
+            data: (conversation) {
+              if (conversation != null) {
+                return ListView.builder(
+                  padding: const EdgeInsets.all(0),
+                  itemCount: conversation.length,
+
+                  itemBuilder: (context, index) {
+                    return ConversationTile(conversation: conversation[index]);
+                  },
+                );
+              }
+              return const Center(child: ReusableText("Start new chat"));
+            },
+            error: (error, stack) {
+              return ErrorScreen(error.toString());
+            },
+            loading: () {
+              return const Loader(color: AppColor.white);
+            },
+          ),
       floatingActionButton: FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: AppColor.blueSecondary,

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telegram/core/configurations/routes/route_names.dart';
+import 'package:telegram/core/utils/reusable_text.dart';
 import 'package:telegram/features/auth/screens/auth_screen.dart';
 import 'package:telegram/features/auth/screens/otp_screen.dart';
+import 'package:telegram/features/chat/screen/chat_screen.dart';
 import 'package:telegram/features/home/screen/home_screen.dart';
 import 'package:telegram/features/onboarding/screen/onboarding_screen.dart';
+import 'package:telegram/features/search/screen/search_screen.dart';
+import 'package:telegram/features/settings/screen/setting_screen.dart';
+import 'package:telegram/features/splash/screen/splash_screen.dart';
 import 'package:telegram/features/user_information/screen/user_information_screen.dart';
 
 final routerProvider = Provider<Routes>((ref) {
@@ -16,33 +21,27 @@ class Routes {
   final Ref ref;
   Routes(this.ref);
   GoRouter router() => GoRouter(
-    // redirect: (context, state) {
-    //   final isLoggedIn = ref
-    //       .watch(authControllerProvider.notifier)
-    //       .isUserLoggedIn();
-
-    //   if (isLoggedIn) {
-    //     return "/home";
-    //   } else {
-    //     return "/";
-    //   }
-    // },
-    // initialLocation: "/auth/user-info",
+    // initialLocation: "/search",
     onException: (context, state, router) {
       const MaterialPage(
-        child: Scaffold(body: Center(child: Text("Page not found"))),
+        child: Scaffold(body: Center(child: ReusableText("Page not found"))),
       );
     },
     routes: [
       GoRoute(
         path: "/",
+        name: RouteNames.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: "/onboarding",
         name: RouteNames.onBoarding,
-        builder: (context, state) => OnboadingScreen(),
+        builder: (context, state) => const OnboadingScreen(),
       ),
       GoRoute(
         path: "/auth",
         name: RouteNames.auth,
-        builder: (context, state) => AuthScreen(),
+        builder: (context, state) => const AuthScreen(),
         routes: [
           GoRoute(
             path: '/verify-otp/:vid',
@@ -55,12 +54,32 @@ class Routes {
       GoRoute(
         path: "/auth/user-info",
         name: RouteNames.userInfo,
-        builder: (context, state) => UserInfoScreen(),
+        builder: (context, state) => const UserInfoScreen(),
       ),
       GoRoute(
         path: "/home",
         name: RouteNames.home,
-        builder: (context, state) => HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
+        routes: [
+          GoRoute(
+            path: "/chat",
+            name: RouteNames.chat,
+            builder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>;
+              return ChatScreen(conversation: extra["conversation"]);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
+        path: "/search",
+        name: RouteNames.search,
+        builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: "/settings",
+        name: RouteNames.settings,
+        builder: (context, state) => const SettingScreen(),
       ),
     ],
   );

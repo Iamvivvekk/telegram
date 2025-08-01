@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:telegram/core/common/widgets/custom_button.dart';
@@ -62,10 +63,10 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                               backgroundImage: file == null
                                   ? ref.watch(userDataProvider)?.profilePic ==
                                             null
-                                        ? AssetImage(
+                                        ? const AssetImage(
                                             "assets/images/profile_default.png",
                                           )
-                                        : NetworkImage(
+                                        : CachedNetworkImageProvider(
                                             ref
                                                 .watch(userDataProvider)!
                                                 .profilePic!,
@@ -105,7 +106,7 @@ class _UserInfoScreenState extends ConsumerState<UserInfoScreen> {
                       return CustomButton(
                         onTap: isLoading ? null : submitAdditionalInfo,
                         text: "Save",
-                        child: isLoading ? Loader() : null,
+                        child: isLoading ? const Loader() : null,
                       );
                     },
                   ),

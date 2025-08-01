@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:telegram/core/configurations/colors.dart';
-import 'package:telegram/core/utils/text_styles.dart';
+import 'package:telegram/core/utils/reusable_text.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({
@@ -27,10 +27,7 @@ class CustomButton extends StatelessWidget {
         child: Center(
           child:
               child ??
-              Text(
-                text,
-                style: normalText(fontWeight: FontWeight.w500, fontsize: 18),
-              ),
+              ReusableText(text, fontWeight: FontWeight.w500, fontsize: 18),
         ),
       ),
     );

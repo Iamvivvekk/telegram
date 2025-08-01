@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:telegram/core/common/extensions/context_extensions.dart';
 import 'package:telegram/core/configurations/colors.dart';
-import 'package:telegram/core/utils/size.dart';
 
 class SearchSuggestion extends StatefulWidget {
   const SearchSuggestion({super.key});
@@ -15,11 +15,13 @@ class _SearchSuggestionState extends State<SearchSuggestion> {
     return DefaultTabController(
       length: 9,
       child: SizedBox(
-        height: ScreenUtil.getSize(context).height,
+        height: context.screenHeight,
         child: Column(
           children: [
-            const SizedBox(
+            SizedBox(
               child: TabBar(
+                splashFactory: NoSplash.splashFactory,
+                labelStyle: Theme.of(context).textTheme.bodySmall,
                 isScrollable: true,
                 labelColor: AppColor.blueSecondary,
                 unselectedLabelColor: AppColor.greyText,
@@ -28,23 +30,52 @@ class _SearchSuggestionState extends State<SearchSuggestion> {
                 dividerColor: AppColor.black,
                 tabAlignment: TabAlignment.start,
                 dividerHeight: 0.5,
-                tabs: [
-                  Tab(text: "Chats"),
-                  Tab(text: "Channels"),
-                  Tab(text: "Apps"),
-                  Tab(text: "Media"),
-                  Tab(text: "Downloads"),
-                  Tab(text: "Links"),
-                  Tab(text: "Files"),
-                  Tab(text: "Music"),
-                  Tab(text: "Voice"),
+
+                tabs: const [
+                  TabItem("Chats"),
+
+                  TabItem("Channels"),
+                  TabItem("Apps"),
+                  TabItem("Media"),
+                  TabItem("Downloads"),
+                  TabItem("Links"),
+                  TabItem("Files"),
+                  TabItem("Music"),
+                  TabItem("Voice"),
                 ],
               ),
             ),
-            Container(),
+            const Expanded(
+              child: TabBarView(
+                children: [
+                  TabItem("Chats"),
+
+                  TabItem("Channels"),
+                  TabItem("Apps"),
+                  TabItem("Media"),
+                  TabItem("Downloads"),
+                  TabItem("Links"),
+                  TabItem("Files"),
+                  TabItem("Music"),
+                  TabItem("Voice"),
+                ],
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class TabItem extends StatelessWidget {
+  const TabItem(this.text, {super.key});
+  final String text;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 12),
+      child: Text(text),
     );
   }
 }

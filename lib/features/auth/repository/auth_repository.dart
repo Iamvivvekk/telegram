@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:telegram/core/Errors/error_handler.dart';
 import 'package:telegram/core/common/providers/firebase_providers.dart';
 import 'package:telegram/core/constants/api_constants.dart';
 import 'package:telegram/core/services/dio_services.dart';
@@ -92,9 +93,32 @@ class AuthRepository {
     }
   }
 
-  Future createUser() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
-    final response = await _dio.get(ApiConstants.signin);
+  FutureEither<UserModel> getUser() async {
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid == null || uid.isEmpty) {
+        return left(Failure("Unauthenticated"));
+      }
+      final response = await _dio.get(
+        ApiConstants.getUser,
+        options: Options(headers: {"authorization": _auth.currentUser!.uid}),
+      );
+      if (response.statusCode == 200) {
+        final user = UserModel.fromJson(response.data['user']);
+        return right(user);
+      }
+      throw response.data['message'];
+    } catch (e) {
+      return left(Failure(ErrorHandler.call(e)));
+    }
+  }
+
+  FutureEither<bool> signOut() async {
+    try {
+      await _auth.signOut();
+      return right(true);
+    } catch (e) {
+      return left(Failure(ErrorHandler.call(e)));
+    }
   }
 }
