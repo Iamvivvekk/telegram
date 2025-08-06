@@ -3,41 +3,28 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:telegram/core/Errors/error_handler.dart';
-import 'package:telegram/core/common/providers/firebase_providers.dart';
 import 'package:telegram/core/constants/api_constants.dart';
 import 'package:telegram/core/services/dio_services.dart';
 import 'package:telegram/core/typedef.dart';
 import 'package:telegram/core/utils/failure.dart';
-import 'package:telegram/model/user_model.dart';
+import 'package:telegram/features/auth/data/model/user_model.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final firebasAuth = ref.read(firebaseAuthProvider);
-  final dio = ref.read(dioServiceProvider);
+class AuthRemoteDatasource {
+  final DioServices dio;
+  final FirebaseAuth auth;
 
-  return AuthRepository(auth: firebasAuth, dio: dio);
-});
-
-class AuthRepository {
-  final FirebaseAuth _auth;
-  final Dio _dio;
-
-  AuthRepository({required FirebaseAuth auth, required Dio dio})
-    : _dio = dio,
-      _auth = auth;
-
-  Stream<User?> get user => _auth.authStateChanges();
+  AuthRemoteDatasource({required this.dio, required this.auth});
 
   FutureEither<String> sendOtp(String phoneNumber) async {
     final completer = Completer<Either<Failure, String>>();
 
     try {
-      await _auth.verifyPhoneNumber(
+      await auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
+          await auth.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
           if (!completer.isCompleted) {
@@ -67,9 +54,9 @@ class AuthRepository {
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      final userCredential = await _auth.signInWithCredential(credential);
+      final userCredential = await auth.signInWithCredential(credential);
 
-      final response = await _dio.post(
+      final response = await dio.dio.post(
         ApiConstants.signin,
         data: jsonEncode({
           "uid": userCredential.user!.uid,
@@ -95,13 +82,13 @@ class AuthRepository {
 
   FutureEither<UserModel> getUser() async {
     try {
-      final uid = _auth.currentUser?.uid;
+      final uid = auth.currentUser?.uid;
       if (uid == null || uid.isEmpty) {
         return left(Failure("Unauthenticated"));
       }
-      final response = await _dio.get(
+      final response = await dio.dio.get(
         ApiConstants.getUser,
-        options: Options(headers: {"authorization": _auth.currentUser!.uid}),
+        options: Options(headers: {"authorization": auth.currentUser!.uid}),
       );
       if (response.statusCode == 200) {
         final user = UserModel.fromJson(response.data['user']);
@@ -113,9 +100,9 @@ class AuthRepository {
     }
   }
 
-  FutureEither<bool> signOut() async {
+  FutureEither<bool> logOut() async {
     try {
-      await _auth.signOut();
+      await auth.signOut();
       return right(true);
     } catch (e) {
       return left(Failure(ErrorHandler.call(e)));

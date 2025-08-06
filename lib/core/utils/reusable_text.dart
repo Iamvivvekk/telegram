@@ -24,16 +24,15 @@ class ReusableText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      
+
       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
         fontSize: fontsize,
         fontWeight: fontWeight,
         color: color,
-      
       ),
       textAlign: textAlign,
       maxLines: maxLines,
-      
+
       overflow: overflow,
     );
   }

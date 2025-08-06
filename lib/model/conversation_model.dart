@@ -29,8 +29,8 @@ class Conversation {
       json["participants"].map((x) => Participant.fromJson(x)),
     ),
     message: List<String>.from(json["message"].map((x) => x)),
-    createdAt: DateTime.parse(json["createdAt"]),
-    updatedAt: DateTime.parse(json["updatedAt"]),
+    createdAt: DateTime.parse(json["createdAt"]).toLocal(),
+    updatedAt: DateTime.parse(json["updatedAt"]).toLocal(),
   );
 
   Map<String, dynamic> toJson() => {

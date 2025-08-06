@@ -4,12 +4,30 @@ class UserModel {
   final int mobile;
   final String? name;
   final String? profilePic;
+  final bool isOnline;
   UserModel({
     required this.uid,
     required this.mobile,
     this.name,
+    this.isOnline = false,
     this.profilePic,
   });
+
+  UserModel copyWith(
+    String? uid,
+    int? mobile,
+    String? name,
+    String? profilePic,
+    bool? isOnline,
+  ) {
+    return UserModel(
+      uid: uid ?? this.uid,
+      mobile: mobile ?? this.mobile,
+      name: name ?? this.name,
+      profilePic: profilePic ?? this.profilePic,
+      isOnline: isOnline ?? this.isOnline,
+    );
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(

@@ -3,11 +3,11 @@ import 'package:telegram/core/common/extensions/context_extensions.dart';
 import 'package:telegram/core/common/extensions/date_extensions.dart';
 import 'package:telegram/core/configurations/colors.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
-import 'package:telegram/model/chat_model.dart';
+import 'package:telegram/model/message_model.dart';
 
 class MyMessageCard extends StatelessWidget {
   const MyMessageCard(this.chat, {super.key});
-  final Chat chat;
+  final Message chat;
 
   @override
   Widget build(BuildContext context) {

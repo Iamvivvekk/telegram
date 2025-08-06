@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,17 +6,28 @@ import 'package:telegram/core/constants/shared_preferences_keys.dart';
 import '../constants/api_constants.dart';
 
 final dioServiceProvider = Provider<Dio>((ref) {
-  final dio = Dio();
-  final handler = DioServices(dio: dio);
+  final handler = DioServices();
   handler._configDio();
-  handler._interceptors();
+  handler._addInterceptors();
   return handler._dio;
 });
 
 class DioServices {
-  final Dio _dio;
+  static final DioServices _instance = DioServices._internal();
 
-  DioServices({required Dio dio}) : _dio = dio;
+  late final Dio _dio;
+
+  factory DioServices() {
+    return _instance;
+  }
+
+  DioServices._internal() {
+    _dio = Dio();
+    _configDio();
+    _addInterceptors();
+  }
+
+  Dio get dio => _dio;
 
   void _configDio() {
     _dio.options.baseUrl = ApiConstants.baseUrl;
@@ -26,17 +35,17 @@ class DioServices {
     _dio.options.receiveTimeout = const Duration(seconds: 60);
   }
 
-  void _interceptors() {
+  void _addInterceptors() {
     _dio.interceptors.add(
       LogInterceptor(request: true, requestHeader: true, responseBody: true),
     );
+
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest:
             (RequestOptions options, RequestInterceptorHandler handler) async {
               final prefs = await SharedPreferences.getInstance();
               final authorization = prefs.getString(SharedPreferencesKeys.uid);
-              log(authorization ?? "Noo token");
 
               options.headers['Content-Type'] =
                   'application/json; charset=UTF-8';
@@ -45,16 +54,11 @@ class DioServices {
               if (authorization != null && authorization.isNotEmpty) {
                 options.headers['authorization'] = authorization;
               }
+
               return handler.next(options);
             },
-        onResponse: (Response response, ResponseInterceptorHandler handler) {
-          return handler.next(response);
-        },
-        onError: (exception, handler) {
-          if (exception.response!.statusCode == 404) {
-            return handler.next(exception);
-          }
-        },
+        onResponse: (response, handler) => handler.next(response),
+        onError: (error, handler) => handler.next(error),
       ),
     );
   }

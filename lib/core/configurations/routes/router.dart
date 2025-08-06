@@ -3,23 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telegram/core/configurations/routes/route_names.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
-import 'package:telegram/features/auth/screens/auth_screen.dart';
-import 'package:telegram/features/auth/screens/otp_screen.dart';
+import 'package:telegram/features/auth/presentation/screens/auth_screen.dart';
+import 'package:telegram/features/auth/presentation/screens/otp_screen.dart';
 import 'package:telegram/features/chat/screen/chat_screen.dart';
 import 'package:telegram/features/home/screen/home_screen.dart';
 import 'package:telegram/features/onboarding/screen/onboarding_screen.dart';
-import 'package:telegram/features/search/screen/search_screen.dart';
-import 'package:telegram/features/settings/screen/setting_screen.dart';
+import 'package:telegram/features/search/presentation/screen/search_screen.dart';
+import 'package:telegram/features/search%20copy/presentation/screen/setting_screen.dart';
 import 'package:telegram/features/splash/screen/splash_screen.dart';
 import 'package:telegram/features/user_information/screen/user_information_screen.dart';
 
 final routerProvider = Provider<Routes>((ref) {
-  return Routes(ref);
+  return Routes();
 });
 
 class Routes {
-  final Ref ref;
-  Routes(this.ref);
+  static final Routes _instance = Routes._internal();
+
+  factory Routes() => _instance;
+
+  Routes._internal();
+
   GoRouter router() => GoRouter(
     // initialLocation: "/search",
     onException: (context, state, router) {

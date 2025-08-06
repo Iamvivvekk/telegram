@@ -1,14 +1,17 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:telegram/core/common/widgets/height.dart';
 import 'package:telegram/core/configurations/colors.dart';
+import 'package:telegram/core/configurations/routes/route_names.dart';
 import 'package:telegram/core/utils/loader.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
 import 'package:telegram/core/utils/text_styles.dart';
-import 'package:telegram/features/auth/controller/auth_controller.dart';
-import 'package:telegram/features/auth/controller/country_picker_provider.dart';
+import 'package:telegram/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:telegram/features/auth/presentation/controller/country_picker_provider.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -25,7 +28,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   void initState() {
-    country = ref.read(countryPickerProvider);
+    country = Country(
+      phoneCode: '91',
+      countryCode: 'IN',
+      e164Sc: 0,
+      geographic: true,
+      level: 1,
+      name: 'India',
+      example: '9123456789',
+      displayName: 'India',
+      displayNameNoCountryCode: 'India',
+      e164Key: '',
+    );
     _countryController.text = "${country.flagEmoji} ${country.displayName}";
     super.initState();
   }
@@ -39,18 +53,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   void sendOtp() async {
     if (_formKey.currentState!.validate()) {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signInWithPhone(
-            context,
-            "+${country.phoneCode}${_phoneController.text.trim()}",
-          );
+      BlocProvider.of<AuthBloc>(context).add(
+        SendOtpEvent(
+          phoneNumber: "+${country.phoneCode}${_phoneController.text.trim()}",
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    country = ref.watch(countryPickerProvider);
+    // country = ref.watch(countryPickerProvider);
     _countryController.text = "${country.flagEmoji} ${country.displayName}";
     return SafeArea(
       child: Scaffold(
@@ -143,13 +156,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColor.primary,
-          shape: const CircleBorder(),
-          onPressed: () => sendOtp(),
-          child: ref.watch(authControllerProvider)
-              ? const Loader(color: AppColor.white)
-              : const Icon(Icons.arrow_forward, color: AppColor.white),
+        floatingActionButton: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAfterOtpSentState) {
+              context.goNamed(
+                RouteNames.otp,
+                pathParameters: {"vid": state.verificationId},
+              );
+            }
+          },
+          buildWhen: (previous, current) => previous != current,
+          builder: (context, state) {
+            Widget child() {
+              if (state is SendingOtpState) {
+                return const Loader(color: AppColor.white);
+              } else {
+                return const Icon(Icons.arrow_forward, color: AppColor.white);
+              }
+            }
+
+            return FloatingActionButton(
+              backgroundColor: AppColor.primary,
+              shape: const CircleBorder(),
+              onPressed: sendOtp,
+              child: child(),
+            );
+          },
         ),
       ),
     );

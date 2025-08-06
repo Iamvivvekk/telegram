@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:telegram/core/common/widgets/custom_button.dart';
@@ -6,6 +7,7 @@ import 'package:telegram/core/common/widgets/height.dart';
 import 'package:telegram/core/configurations/routes/route_names.dart';
 import 'package:telegram/core/constants/image_constants.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
+import 'package:telegram/features/auth/presentation/bloc/auth_bloc.dart';
 
 class OnboadingScreen extends ConsumerWidget {
   const OnboadingScreen({super.key});
@@ -38,11 +40,15 @@ class OnboadingScreen extends ConsumerWidget {
               const Spacer(),
               SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.75,
-                child: CustomButton(
-                  onTap: () {
-                    context.pushNamed(RouteNames.auth);
+                child: BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    return CustomButton(
+                      onTap: () {
+                        context.pushNamed(RouteNames.auth);
+                      },
+                      text: "Start Messaging",
+                    );
                   },
-                  text: "Start Messaging",
                 ),
               ),
               const HeightSpacer(height: 28),

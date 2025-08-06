@@ -3,11 +3,11 @@ import 'package:telegram/core/common/extensions/context_extensions.dart';
 import 'package:telegram/core/common/extensions/date_extensions.dart';
 import 'package:telegram/core/configurations/colors.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
-import 'package:telegram/model/chat_model.dart';
+import 'package:telegram/model/message_model.dart';
 
 class SenderMessageCard extends StatelessWidget {
   const SenderMessageCard(this.chat, {super.key});
-  final Chat chat;
+  final Message chat;
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -36,7 +36,7 @@ class SenderMessageCard extends StatelessWidget {
             children: [
               Flexible(child: ReusableText(chat.message, maxLines: null)),
               const SizedBox(width: 3),
-              ReusableText(chat.createdAt.toLocal().toTime  , fontsize: 8),
+              ReusableText(chat.createdAt.toLocal().toTime, fontsize: 8),
               const SizedBox(width: 3),
             ],
           ),

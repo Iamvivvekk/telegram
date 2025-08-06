@@ -65,6 +65,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                   child: Center(child: Text("chats are null")),
                                 );
                               }
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (_scrollController.hasClients) {
+                                  _scrollController.jumpTo(
+                                    _scrollController.position.maxScrollExtent,
+                                  );
+                                  
+                                }
+                              });
                               return Expanded(
                                 child: ListView.builder(
                                   // reverse: true,
@@ -101,18 +109,21 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   ),
                   MessageField(
-                    widget.conversation.participants.last,
-                    jumpTo: () {
-                      // _scrollController.jumpTo(
-                      //   _scrollController.position.maxScrollExtent,
-                      // );
-                    },
+                    participant: widget.conversation.participants.first,
                   ),
                 ],
               ),
-              ChatScreenAppbar(
-                fullName: widget.conversation.participants.last.fullName,
-                photoUrl: widget.conversation.participants.last.photoUrl,
+              Consumer(
+                builder: (context, ref, child) {
+                  return ChatScreenAppbar(
+                    fullName:
+                        widget.conversation.participants.first.id ==
+                            ref.read(userDataProvider)!.uid
+                        ? widget.conversation.participants.last.fullName
+                        : widget.conversation.participants.first.fullName,
+                    photoUrl: widget.conversation.participants.last.photoUrl,
+                  );
+                },
               ),
             ],
           ),

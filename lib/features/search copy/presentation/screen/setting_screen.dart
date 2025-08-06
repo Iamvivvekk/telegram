@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:telegram/features/auth/controller/auth_controller.dart';
-import 'package:telegram/features/settings/widget/section_tile.dart';
-import 'package:telegram/features/settings/widget/section_title.dart';
-import 'package:telegram/features/settings/widget/settings_header.dart';
+import 'package:telegram/features/search%20copy/presentation/widget/section_tile.dart';
+import 'package:telegram/features/search%20copy/presentation/widget/section_title.dart';
+import 'package:telegram/features/search%20copy/presentation/widget/settings_header.dart';
 import 'package:telegram/providers/user_data_provider.dart';
 
 class SettingScreen extends ConsumerStatefulWidget {
@@ -74,12 +73,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
           const SectionTile(icon: Icons.data_usage, title: "Data and Storage"),
           const SectionTile(icon: Icons.battery_saver, title: "Power Saving"),
           const SectionTile(icon: Icons.folder, title: "Chat Folders"),
-          SectionTile(
-            icon: Icons.devices,
-            title: "Sign out",
-            onTap: () =>
-                ref.read(authControllerProvider.notifier).signOut(context),
-          ),
+          SectionTile(icon: Icons.devices, title: "Sign out", onTap: () {}),
         ],
       ),
     );

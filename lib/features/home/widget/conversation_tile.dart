@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:telegram/core/common/extensions/date_extensions.dart';
 import 'package:telegram/core/common/widgets/height.dart';
 import 'package:telegram/core/common/widgets/width_spcer.dart';
 import 'package:telegram/core/configurations/colors.dart';
@@ -8,6 +10,7 @@ import 'package:telegram/core/configurations/routes/route_names.dart';
 import 'package:telegram/core/constants/image_constants.dart';
 import 'package:telegram/core/utils/reusable_text.dart';
 import 'package:telegram/model/conversation_model.dart';
+import 'package:telegram/providers/user_data_provider.dart';
 
 class ConversationTile extends StatelessWidget {
   const ConversationTile({super.key, required this.conversation});
@@ -46,9 +49,16 @@ class ConversationTile extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ReusableText(
-                          conversation.participants.last.fullName,
-                          fontWeight: FontWeight.bold,
+                        Consumer(
+                          builder: (_, ref, _) {
+                            return ReusableText(
+                              conversation.participants.first.id ==
+                                      ref.read(userDataProvider)!.uid
+                                  ? conversation.participants.last.fullName
+                                  : conversation.participants.first.fullName,
+                              fontWeight: FontWeight.bold,
+                            );
+                          },
                         ),
                         const ReusableText("Last Message", fontsize: 10),
                       ],
@@ -57,10 +67,7 @@ class ConversationTile extends StatelessWidget {
                 ),
                 Column(
                   children: [
-                    ReusableText(
-                      "${conversation.updatedAt.day}-${conversation.updatedAt.month}-${conversation.updatedAt.year}",
-                      fontsize: 12,
-                    ),
+                    ReusableText(conversation.updatedAt.toDMy, fontsize: 12),
                     const HeightSpacer(height: 6),
                     Container(
                       height: 18,

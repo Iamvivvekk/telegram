@@ -8,9 +8,8 @@ import 'package:telegram/model/conversation_model.dart';
 import 'package:telegram/providers/user_data_provider.dart';
 
 class MessageField extends ConsumerStatefulWidget {
-  const MessageField(this.participant, {super.key, required this.jumpTo});
+  const MessageField({super.key, required this.participant});
   final Participant participant;
-  final VoidCallback jumpTo;
 
   @override
   ConsumerState<MessageField> createState() => _MessageFieldState();
@@ -34,7 +33,6 @@ class _MessageFieldState extends ConsumerState<MessageField> {
             message: messageFieldController.text.trim(),
           );
       messageFieldController.clear();
-      // widget.jumpTo();
     }
   }
 
@@ -77,7 +75,6 @@ class _MessageFieldState extends ConsumerState<MessageField> {
           hintText: "Message",
           hintStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
             color: AppColor.greyText.withAlpha(120),
-            // fo,
           ),
           prefixIcon: GestureDetector(
             onTap: sendMessage,
